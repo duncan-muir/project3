@@ -35,4 +35,63 @@ class Graph:
         We highly encourage the use of priority queues in your implementation. See the heapq
         module, particularly the `heapify`, `heappop`, and `heappush` functions.
         """
-        self.mst = 'TODO'
+
+        print(self.adj_mat)
+        self.mst = np.zeros_like(self.adj_mat)
+
+        # start at node 0
+        heap = self.get_edge_from_numpy_arr(0, self.adj_mat[0])
+        heapq.heapify(heap)
+
+        # intiialize set for tracking visitation
+        seen_list = set()
+        seen_list.add(0)
+
+        while len(heap) > 0:
+            curr = heapq.heappop(heap)
+            if curr.to not in seen_list:
+                seen_list.add(curr.to)
+                self.mst[[curr.frm, curr.to],
+                         [curr.to, curr.frm]] = curr.weight
+                for out_edge in self.get_edge_from_numpy_arr(curr.to, self.adj_mat[curr.to]):
+                    if out_edge.to not in seen_list:
+                        heapq.heappush(heap, out_edge)
+
+        print(self.mst)
+        print(np.any(np.sum(self.mst, axis=0) == 0))
+
+    @staticmethod
+    def get_edge_from_numpy_arr(frm: int, out_arr: np.array):
+        out_idx = np.argwhere(out_arr)
+        edges = [Edge(frm, dest.item(), weight.item())
+                 for dest, weight in zip(out_idx, out_arr[out_idx])]
+
+        return edges
+
+
+class Edge:
+    def __init__(self, frm: int, to: int, weight: float):
+        self._frm = frm
+        self._to = to
+        self._weight = weight
+
+    def __eq__(self, other):
+        return other.weight == self._weight
+
+    def __lt__(self, other):
+        return self._weight < other.weight
+
+    def __repr__(self):
+        return f"({self._frm})--{self._weight}--({self._to})"
+
+    @property
+    def weight(self):
+        return self._weight
+
+    @property
+    def frm(self):
+        return self._frm
+
+    @property
+    def to(self):
+        return self._to
