@@ -1,7 +1,7 @@
 # Project 3
 ## Minimum Spanning Trees
-Duncan Muir
-! [BuildStatus] (https://github.com/duncan-muir/project3/workflows/project3/badge.svg?event=push)
+Duncan Muir \
+![BuildStatus](https://github.com/duncan-muir/project3/workflows/project3/badge.svg?event=push)
 # Assignment Overview
 The purpose of this assignment is to implement Prim's algorithm, a non-trivial greedy algorithm used to construct minimum spanning trees. 
 
