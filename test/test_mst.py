@@ -31,7 +31,18 @@ def check_mst(adj_mat: np.ndarray,
     for i in range(mst.shape[0]):
         for j in range(i+1):
             total += mst[i, j]
+
     assert approx_equal(total, expected_weight), 'Proposed MST has incorrect expected weight'
+
+    # check symmetry via row-wise and column-wise sums
+    assert np.allclose(np.sum(mst, axis=0), np.sum(mst, axis=1), rtol=1e-05, atol=1e-08)
+
+    # check that each there are N-1 edges symmetrically, where N = number of nodes
+    n_nodes = len(mst) - 1
+    assert np.count_nonzero(np.tril(mst)) == np.count_nonzero(np.triu(mst)) == n_nodes
+
+    # check that no node is disconnected on either axis
+    assert (not np.any(np.sum(mst, axis=0) == 0)) and (not np.any(np.sum(mst, axis=1) == 0))
 
 
 def test_mst_small():
@@ -57,6 +68,12 @@ def test_mst_single_cell_data():
     check_mst(g.adj_mat, g.mst, 57.263561605571695)
 
 
-def test_mst_student():
-    """ TODO: Write at least one unit test for MST construction """
-    pass
+def test_mst_disconnected():
+    """ Unit test that no mst is found for a disconnected input adj matrix """
+
+    file_path = './data/disconnected.csv'
+    g = Graph(file_path)
+    g.construct_mst()
+
+    assert g.mst is None
+

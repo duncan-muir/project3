@@ -36,33 +36,61 @@ class Graph:
         module, particularly the `heapify`, `heappop`, and `heappush` functions.
         """
 
-        print(self.adj_mat)
-        self.mst = np.zeros_like(self.adj_mat)
+        # initialize empty mst adj matrix
+        mst = np.zeros_like(self.adj_mat)
 
-        # start at node 0
+        # start at node 0, get out edges from starting node
         heap = self.get_edge_from_numpy_arr(0, self.adj_mat[0])
+        # heap used as priority queue
         heapq.heapify(heap)
 
-        # intiialize set for tracking visitation
+        # initialize set for tracking visitation
         seen_list = set()
         seen_list.add(0)
 
         while len(heap) > 0:
+            # heap is not empty
             curr = heapq.heappop(heap)
+
             if curr.to not in seen_list:
+                # destination node has not been seen
                 seen_list.add(curr.to)
-                self.mst[[curr.frm, curr.to],
-                         [curr.to, curr.frm]] = curr.weight
+
+                # connect current to dest in mst symmetrically,
+                # as it is the minimum weight edge
+                mst[[curr.frm, curr.to],
+                    [curr.to, curr.frm]] = curr.weight
+
+                # construct out-edges from current node
                 for out_edge in self.get_edge_from_numpy_arr(curr.to, self.adj_mat[curr.to]):
+                    # add to heap if not seen
                     if out_edge.to not in seen_list:
                         heapq.heappush(heap, out_edge)
 
-        print(self.mst)
-        print(np.any(np.sum(self.mst, axis=0) == 0))
+        # check that all nodes are connected to another node, if not,
+        # leave self.mst as None
+        if not np.any(np.sum(mst, axis=0) == 0):
+            self.mst = mst
+
+        return
 
     @staticmethod
     def get_edge_from_numpy_arr(frm: int, out_arr: np.array):
+        """
+        Static method to construct Edges from a given node/index
+        to all other connected via some adjacency matrix.
+        This method assumes the indices of the out_arr correspond
+        to the node numbers
+        Args:
+            frm: source node/index (the i-th row or j-th column which is == out_arr)
+            out_arr: array of outward connected nodes with zeros if disconnected else weights
+
+        Returns: list of Edge objects
+
+        """
+        # get indices/nodes with connected edge (non-zero)
         out_idx = np.argwhere(out_arr)
+        # construct Edge object for each connected node and non-zero weight
         edges = [Edge(frm, dest.item(), weight.item())
                  for dest, weight in zip(out_idx, out_arr[out_idx])]
 
@@ -70,28 +98,86 @@ class Graph:
 
 
 class Edge:
+    """
+    Class to store edge connections and weight for sorting
+    """
+
     def __init__(self, frm: int, to: int, weight: float):
+        """
+
+        Args:
+            frm: int - source node
+            to: int - dest node
+            weight: float - edge weight
+        """
         self._frm = frm
         self._to = to
         self._weight = weight
 
     def __eq__(self, other):
+        """
+        Override equals (might not be necessary as lt should cover queue addition)
+        Args:
+            other: Edge
+
+        Returns: Bool
+
+        """
         return other.weight == self._weight
 
     def __lt__(self, other):
+        """
+        Overrides lt for queue/heap addition
+        Args:
+            other: Edge
+
+        Returns: Bool
+
+        """
         return self._weight < other.weight
 
+    def __gt__(self, other):
+        """
+        Overrides gt for queue / heap addition
+        Args:
+            other: Edge
+
+        Returns: Bool
+
+        """
+        return self._weight > other.weight
+
     def __repr__(self):
+        """
+        Override repr for debugging
+        Returns:
+
+        """
         return f"({self._frm})--{self._weight}--({self._to})"
 
     @property
     def weight(self):
+        """
+        Getter method/prop
+        Returns: float
+
+        """
         return self._weight
 
     @property
     def frm(self):
+        """
+        Getter method/prop
+        Returns: int
+
+        """
         return self._frm
 
     @property
     def to(self):
+        """
+       Getter method/prop
+       Returns: int
+
+       """
         return self._to

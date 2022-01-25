@@ -1,5 +1,5 @@
 from mst import Graph
-
+import numpy as np
 
 def main():
     file_path = './data/small.csv'
